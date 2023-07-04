@@ -1,45 +1,60 @@
 #include <curses.h>
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <stdlib.h>
 
 #include "poker/poker.h"
-
-#define COUNT 52
-#define SUITS 4
-#define RANKS 13
+#include "image/image.h"
+#include "poker/player.h"
+#include "poker/card.h"
 
 void create_image();
-void read_image();
+void run_game();
+void print_hands(struct Player* players, int player_count);
+void print_community(struct Card* community);
 
 int main(int argc, char *argv[]) {
+    srand(time(NULL));
 
-  int DECK[4][13] = {{1,2,3,4,5,6,7,8,9,10,11,12},{1,2,3,4,5,6,7,8,9,10,11,12},{1,2,3,4,5,6,7,8,9,10,11,12},{1,2,3,4,5,6,7,8,9,10,11,12}};
-
-  initscr();
+  /*initscr();
   cbreak();
   noecho();
   start_color();
   refresh();
-  read_image();
+  read_image("image2.txt");
   refresh();
   getch();
-  endwin();
+  endwin();*/
 
-  return 0;
+    run_game();
+
+    return 0;
 }
-void read_image() {
-  FILE* ptr;
-  char ch[300];
 
-  ptr = fopen("image2.txt", "r");
-  while(fgets(ch, sizeof(ch), ptr) != NULL) {
-    printf("%s", ch);
-    printf("\n\r");
-  }
+void run_game() {
+    struct Card* deck_ptr;
+    struct Player* player_ptr;
+    struct Card* comm_ptr;
+    int num_players = 4;
+    deck_ptr = create_deck();
+    player_ptr = create_players(num_players, deck_ptr);
+    print_hands(player_ptr, num_players);
+    comm_ptr = create_community(deck_ptr);
+    print_community(comm_ptr);
+}
 
-  fclose(ptr);
+void print_hands(struct Player* players, int player_count) {
+   for (int i = 0; i < player_count; i++) {
+        printf("player: %d [%c%d, %c%d]\n", players[i].player, players[i].hole[0].suit, players[i].hole[0].rank, players[i].hole[1].suit, players[i].hole[1].rank);
+    }
+}
+
+void print_community(struct Card* community) {
+    for (int i = 0; i < 5; i++) {
+        printf("%c%d\n", community[i].suit, community[i].rank);
+    }
 }
 
 void create_image() {
