@@ -14,6 +14,7 @@ void create_image();
 void run_game();
 void print_hands(struct Player* players, int player_count);
 void print_community(struct Card* community);
+void print_winner(struct Player winner);
 
 int main(int argc, char *argv[]) {
     srand(time(NULL));
@@ -43,6 +44,12 @@ void run_game() {
     print_hands(player_ptr, num_players);
     comm_ptr = create_community(deck_ptr);
     print_community(comm_ptr);
+    struct Player winner = determine_winner(player_ptr, num_players, comm_ptr);
+    print_winner(winner);
+}
+
+void print_winner(struct Player winner) {
+    printf("PAIR: %c%d\n", winner.hole[0].suit, winner.hole[0].rank);
 }
 
 void print_hands(struct Player* players, int player_count) {
