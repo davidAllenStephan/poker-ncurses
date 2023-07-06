@@ -51,11 +51,18 @@ void determine_winner(struct Player* players, int player_count, struct Card* com
             players[i].winning[1] = is_pair[1];
         }
         struct Card* is_tpair = check_tpair(players[i], comm);
-        if (is_tpair[3].player != -3) {
+        if (is_tpair[0].player != -3) {
             players[i].winning[0] = is_tpair[0];
             players[i].winning[1] = is_tpair[1];
             players[i].winning[2] = is_tpair[2];
             players[i].winning[3] = is_tpair[3];
+        }
+        struct Card* is_triple = check_triple(players[i], comm);
+        if (is_triple[0].player != -3) {
+            players[i].winning[0] = is_triple[0];
+            players[i].winning[1] = is_triple[1];
+            players[i].winning[2] = is_triple[2];
+            players[i].winning[3] = get_empty_card();
         }
     }
 }
@@ -71,37 +78,29 @@ struct Card check_highest(struct Player player) {
 
 struct Card* check_pair(struct Player player, struct Card* comm, int rank_ignore) {
     static struct Card highest_pair[2];
+    static struct Card cc[7];
     highest_pair[0] = get_empty_card();
     highest_pair[1] = get_empty_card();
+    cc[0] = player.hole[0];
+    cc[1] = player.hole[1];
+    cc[2] = comm[0];
+    cc[3] = comm[1];
+    cc[4] = comm[2];
+    cc[5] = comm[3];
+    cc[6] = comm[4];
     if(player.hole[0].rank != rank_ignore) {
         if (player.hole[0].rank == player.hole[1].rank) {
             highest_pair[0] = player.hole[0];
             highest_pair[1] = player.hole[1];
         }
     }
-    for (int i = 0; i < 5; i++) {
-        if (player.hole[0].rank == comm[i].rank && player.hole[0].rank != rank_ignore) {
-            if (highest_pair[0].rank < player.hole[0].rank || highest_pair[0].player == -3) {
-                highest_pair[0] = player.hole[0];
-                highest_pair[1] = comm[i];
-            }
-        }
-        if (player.hole[1].rank == comm[i].rank && player.hole[1].rank != rank_ignore) {
-            if (highest_pair[0].rank < player.hole[1].rank || highest_pair[0].player == -3) {
-                highest_pair[0] = player.hole[1];
-                highest_pair[1] = comm[i];
-            }
-        }
-    }
-    for (int i = 0; i < 5; i++) {
-        if (comm[i].rank != rank_ignore) {
-            for (int k = 0; k < 5; k++) {
-                if (i != k) {
-                    if (comm[i].rank == comm[k].rank) {
-                        if (highest_pair[0].rank < comm[i].rank || highest_pair[0].player == -3) {
-                            highest_pair[0] = comm[i];
-                            highest_pair[1] = comm[k];
-                        }
+    for (int i = 0; i < 7; i++) {
+        for (int j = 0; j < 7; j++) {
+            if (j != i) {
+                if (cc[i].rank == cc[j].rank && cc[i].rank != rank_ignore) {
+                    if (highest_pair[0].rank < cc[i].rank || highest_pair[0].player == -3) {
+                        highest_pair[0] = cc[i];
+                        highest_pair[1] = cc[j];
                     }
                 }
             }
@@ -131,4 +130,35 @@ struct Card* check_tpair(struct Player player, struct Card* comm) {
         highest_tpair[3] = pair_two[1];
     }
     return highest_tpair;
+}
+
+struct Card* check_triple(struct Player player, struct Card* comm) {
+    static struct Card highest_triple[3];
+    static struct Card cc[7];
+    highest_triple[0] = get_empty_card();
+    highest_triple[1] = get_empty_card();
+    highest_triple[2] = get_empty_card();
+    cc[0] = player.hole[0];
+    cc[1] = player.hole[1];
+    cc[2] = comm[0];
+    cc[3] = comm[1];
+    cc[4] = comm[2];
+    cc[5] = comm[3];
+    cc[6] = comm[4];
+    for (int i = 0; i < 7; i++) {
+        for (int j = 0; j < 7; j++) {
+            for (int k = 0; k < 7; k++) {
+                if (i != j && j != k && i != k) {
+                    if (cc[i].rank == cc[j].rank && cc[j].rank == cc[k].rank && cc[i].rank == cc[j].rank) {
+                        if (cc[i].rank > highest_triple[0].rank || highest_triple[0].player == -3) {
+                            highest_triple[0] = cc[i];
+                            highest_triple[1] = cc[j];
+                            highest_triple[2] = cc[k];
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return highest_triple;
 }
