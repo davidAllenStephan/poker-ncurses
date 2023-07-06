@@ -19,3 +19,11 @@ bool is_equal(struct Card card_1, struct Card card_2) {
     }
     return false;
 }
+
+struct Card get_empty_card() {
+    struct Card empty_card;
+    empty_card.player = -3;
+    empty_card.rank = -1;
+    empty_card.suit = 'x';
+    return empty_card;
+}

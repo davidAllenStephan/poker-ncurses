@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/_types/_null.h>
 #include <time.h>
 #include <stdlib.h>
 
@@ -14,7 +15,7 @@ void create_image();
 void run_game();
 void print_hands(struct Player* players, int player_count);
 void print_community(struct Card* community);
-void print_winner(struct Player winner);
+void print_players(struct Player* players, int player_count);
 
 int main(int argc, char *argv[]) {
     srand(time(NULL));
@@ -44,17 +45,29 @@ void run_game() {
     print_hands(player_ptr, num_players);
     comm_ptr = create_community(deck_ptr);
     print_community(comm_ptr);
-    struct Player winner = determine_winner(player_ptr, num_players, comm_ptr);
-    print_winner(winner);
+    determine_winner(player_ptr, num_players, comm_ptr);
+    print_players(player_ptr, num_players);
 }
 
-void print_winner(struct Player winner) {
-    printf("PAIR: %c%d\n", winner.hole[0].suit, winner.hole[0].rank);
+void print_players(struct Player* players, int player_count) {
+    for (int i = 0; i < player_count; i++) {
+        if (players[i].winning[0].player != -3) {
+            printf("player %d WINNING: [%c%d", players[i].player, players[i].winning[0].suit, players[i].winning[0].rank);
+            for (int k = 1; k < 5; k++) {
+                if (players[i].winning[k].player == -3) {
+                    printf(", X");
+                } else {
+                    printf(", %c%d", players[i].winning[k].suit, players[i].winning[k].rank);
+                }
+            }
+            printf("]\n");
+        }
+    }
 }
 
 void print_hands(struct Player* players, int player_count) {
    for (int i = 0; i < player_count; i++) {
-        printf("player: %d [%c%d, %c%d]\n", players[i].player, players[i].hole[0].suit, players[i].hole[0].rank, players[i].hole[1].suit, players[i].hole[1].rank);
+        printf("player %d [%c%d, %c%d]\n", players[i].player, players[i].hole[0].suit, players[i].hole[0].rank, players[i].hole[1].suit, players[i].hole[1].rank);
     }
 }
 
