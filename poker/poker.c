@@ -66,52 +66,46 @@ struct Card check_highest(struct Player player) {
   } else if (player.hole[0].rank < player.hole[1].rank) {
     return player.hole[1];
   }
-  struct Card empty_card;
-  empty_card.suit = 'x';
-  empty_card.rank = -1;
-  empty_card.player = -3;
-  return empty_card;
+  return get_empty_card();
 }
 
 struct Card* check_pair(struct Player player, struct Card* comm, int rank_ignore) {
     static struct Card highest_pair[2];
     highest_pair[0] = get_empty_card();
     highest_pair[1] = get_empty_card();
-    if(player.hole[0].rank != rank_ignore && player.hole[1].rank != rank_ignore) {
-    if (player.hole[0].rank == player.hole[1].rank) {
-        highest_pair[0] = player.hole[0];
-        highest_pair[1] = player.hole[1];
-        return highest_pair;
+    if(player.hole[0].rank != rank_ignore) {
+        if (player.hole[0].rank == player.hole[1].rank) {
+            highest_pair[0] = player.hole[0];
+            highest_pair[1] = player.hole[1];
+        }
     }
     for (int i = 0; i < 5; i++) {
-        if (player.hole[0].rank == comm[i].rank) {
+        if (player.hole[0].rank == comm[i].rank && player.hole[0].rank != rank_ignore) {
             if (highest_pair[0].rank < player.hole[0].rank || highest_pair[0].player == -3) {
                 highest_pair[0] = player.hole[0];
                 highest_pair[1] = comm[i];
             }
         }
-        if (player.hole[1].rank == comm[i].rank) {
+        if (player.hole[1].rank == comm[i].rank && player.hole[1].rank != rank_ignore) {
             if (highest_pair[0].rank < player.hole[1].rank || highest_pair[0].player == -3) {
                 highest_pair[0] = player.hole[1];
                 highest_pair[1] = comm[i];
             }
         }
     }
-    }
     for (int i = 0; i < 5; i++) {
-      if (comm[i].rank != rank_ignore) {
-      for (int k = 0; k < 5; k++) {
-            if (i != k) {
-                if (comm[i].rank == comm[k].rank) {
-                    if (highest_pair[0].rank < comm[i].rank || highest_pair[0].player == -3) {
-                        highest_pair[0] = comm[i];
-                        highest_pair[1] = comm[k];
+        if (comm[i].rank != rank_ignore) {
+            for (int k = 0; k < 5; k++) {
+                if (i != k) {
+                    if (comm[i].rank == comm[k].rank) {
+                        if (highest_pair[0].rank < comm[i].rank || highest_pair[0].player == -3) {
+                            highest_pair[0] = comm[i];
+                            highest_pair[1] = comm[k];
+                        }
                     }
                 }
             }
         }
-      }
-
     }
     return highest_pair;
 }
@@ -122,15 +116,19 @@ struct Card* check_tpair(struct Player player, struct Card* comm) {
     highest_tpair[1] = get_empty_card();
     highest_tpair[2] = get_empty_card();
     highest_tpair[3] = get_empty_card();
+    /* note: having these if statments below nested within each other caused
+     * lots of problems, pair_two would always equal pair_one for some
+     * reason even when finding a second pair
+     */
     struct Card* pair_one = check_pair(player, comm, -1);
     if (pair_one[0].player != -3) {
-        struct Card* pair_two = check_pair(player, comm, pair_one[0].rank);
-        if (pair_two[0].player != -3) {
-            highest_tpair[0] = pair_one[0];
-            highest_tpair[1] = pair_one[1];
-            highest_tpair[2] = pair_two[0];
-            highest_tpair[3] = pair_two[1];
-        }
+        highest_tpair[0] = pair_one[0];
+        highest_tpair[1] = pair_one[1];
+    }
+    struct Card* pair_two = check_pair(player, comm, pair_one[0].rank);
+    if (pair_two[0].player != -3) {
+        highest_tpair[2] = pair_two[0];
+        highest_tpair[3] = pair_two[1];
     }
     return highest_tpair;
 }
