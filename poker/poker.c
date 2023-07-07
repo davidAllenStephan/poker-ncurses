@@ -64,6 +64,14 @@ void determine_winner(struct Player* players, int player_count, struct Card* com
             players[i].winning[2] = is_triple[2];
             players[i].winning[3] = get_empty_card();
         }
+        struct Card* is_straight = check_straight(players[i], comm);
+        if (is_straight[0].player != -3) {
+            players[i].winning[0] = is_straight[0];
+            players[i].winning[1] = is_straight[1];
+            players[i].winning[2] = is_straight[2];
+            players[i].winning[3] = is_straight[3];
+            players[i].winning[4] = is_straight[4];
+        }
     }
 }
 
@@ -161,4 +169,54 @@ struct Card* check_triple(struct Player player, struct Card* comm) {
         }
     }
     return highest_triple;
+}
+
+struct Card* check_straight(struct Player player, struct Card* comm) {
+    static struct Card highest_straight[5];
+    static struct Card cc[7];
+    for (int i = 0; i < 5; i++) {
+        highest_straight[i] = get_empty_card();
+    }
+    cc[0] = player.hole[0];
+    cc[1] = player.hole[1];
+    cc[2] = comm[0];
+    cc[3] = comm[1];
+    cc[4] = comm[2];
+    cc[5] = comm[3];
+    cc[6] = comm[4];
+    for (int i = 0; i < 7; i++) {
+        for (int j = 0; j < 7; j++) {
+            if (i != j) {
+                if (cc[i].rank < cc[j].rank) {
+                    struct Card temp = cc[i];
+                    cc[i] = cc[j];
+                    cc[j] = temp;
+                }
+            }
+        }
+    }
+    int total = 0;
+    for (int i = 0; i < 2; i++) {
+        int start = cc[i].rank;
+        for (int j = i+1; j < 7; j++) {
+            if ((start+1) == cc[j].rank) {
+                start = cc[j].rank;
+                total = total + 1;
+                if (total == 4) {
+                    if (highest_straight[0].rank < cc[j].rank || highest_straight[0].player == -3) {
+                        highest_straight[0] = cc[j];
+                        highest_straight[1] = cc[j-1];
+                        highest_straight[2] = cc[j-2];
+                        highest_straight[3] = cc[j-3];
+                        highest_straight[4] = cc[j-4];
+                    } else {
+                        total = total - 1;
+                    }
+                }
+            } else {
+                break;
+            }
+        }
+    }
+    return highest_straight;
 }

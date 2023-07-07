@@ -12,7 +12,7 @@
 #include "poker/card.h"
 
 void create_image();
-void run_game();
+struct Player* run_game();
 void print_hands(struct Player* players, int player_count);
 void print_community(struct Card* community);
 void print_players(struct Player* players, int player_count);
@@ -29,24 +29,34 @@ int main(int argc, char *argv[]) {
   refresh();
   getch();
   endwin();*/
+    int cont= 0;
+    int count = 0;
+    while (cont == 0) {
+        count += 1;
+        printf("%d\n", count);
+        struct Player* output = run_game();
+        for (int i = 0; i < 4; i++) {
+            if (output[i].winning[4].player != -3) {
+                cont = -1;
+                print_players(output, 4);
+            }
+        }
+    }
 
-    run_game();
 
     return 0;
 }
 
-void run_game() {
+struct Player* run_game() {
     struct Card* deck_ptr;
     struct Player* player_ptr;
     struct Card* comm_ptr;
     int num_players = 4;
     deck_ptr = create_deck();
     player_ptr = create_players(num_players, deck_ptr);
-    print_hands(player_ptr, num_players);
     comm_ptr = create_community(deck_ptr);
-    print_community(comm_ptr);
     determine_winner(player_ptr, num_players, comm_ptr);
-    print_players(player_ptr, num_players);
+    return player_ptr;
 }
 
 void print_players(struct Player* players, int player_count) {
