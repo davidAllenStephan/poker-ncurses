@@ -23,7 +23,24 @@ bool is_equal(struct Card card_1, struct Card card_2) {
 struct Card get_empty_card() {
     struct Card empty_card;
     empty_card.player = -3;
-    empty_card.rank = -1;
+    empty_card.rank = 100;
     empty_card.suit = 'x';
     return empty_card;
+}
+
+void sort_cards(struct Card* community) {
+    for (int i = 0; i < 7; i++) {
+        for (int j = 0; j < 7; j++) {
+            if (i != j) {
+                if (community[i].rank == community[j].rank) {
+                    community[i] = get_empty_card();
+                }
+                if (community[i].rank <= community[j].rank) {
+                    struct Card temp = community[i];
+                    community[i] = community[j];
+                    community[j] = temp;
+                }
+            }
+        }
+    }
 }

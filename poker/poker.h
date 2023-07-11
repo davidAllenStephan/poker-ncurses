@@ -14,5 +14,8 @@ struct Card* check_triple(struct Player player, struct Card* comm);
 struct Card* check_straight(struct Player player, struct Card* comm);
 struct Card* check_flush(struct Player player, struct Card* comm);
 struct Card* check_full(struct Player player, struct Card* comm);
+struct Card* check_straight_flush(struct Player player, struct Card* comm);
+struct Card* check_all(struct Card* collection);
+struct Card* create_collection(struct Player player, struct Card* community);
 
 #endif

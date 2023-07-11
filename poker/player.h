@@ -7,6 +7,7 @@ struct Player {
     int player;
     struct Card hole[2];
     struct Card winning[5];
+    char winning_type;
 };
 
 struct Player* create_players(int num, struct Card* deck);

@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+bool exists1d(struct Card* array, int array_size, int search);
+int exists2d(struct Card** array, int search);
+
 struct Card* create_deck() {
     static struct Card deck[52];
     for (int i = 0; i < 52; i++) {
@@ -39,16 +42,63 @@ struct Card* create_community(struct Card* deck) {
     return community;
 }
 
+struct Card* create_collection(struct Player player, struct Card* community) {
+  static struct Card collection[7];
+  for (int i = 0, j = 0; i < 7; i++) {
+    if (i < 2) {
+      collection[i] = player.hole[i];
+    } else {
+      collection[i] = community[j];
+      j++;
+    }
+  }
+  return collection;
+}
+
+struct Card* check_all(struct Card* community) {
+  sort_cards(community);
+  static struct Card hand[5];
+  for (int i = 0; i < 7; i++) {
+
+  }
+  return hand;
+}
+
+bool exists1d(struct Card* array, int array_size, int search) {
+  for (int i = 0; i < array_size; i++) {
+    if (array[i].rank == search) {
+      return true;
+    }
+  }
+  return false;
+}
+int exists2d(struct Card** array, int search) {
+  for (int i = 0; i < 7; i++) {
+    for (int j = 0; j < 4; j++) {
+      if (i != j) {
+        if (array[i][j].rank == search) {
+          return i;
+        }
+      }
+    }
+  }
+  return -1;
+}
+
 void determine_winner(struct Player* players, int player_count, struct Card* comm) {
+
     for (int i = 0; i < player_count; i++) {
         struct Card is_highest = check_highest(players[i]);
+
         if (is_highest.player != -3) {
             players[i].winning[0] = is_highest;
+            players[i].winning_type = 'h';
         }
         struct Card* is_pair = check_pair(players[i], comm, -1);
         if (is_pair[0].player != -3) {
             players[i].winning[0] = is_pair[0];
             players[i].winning[1] = is_pair[1];
+            players[i].winning_type = 'p';
         }
         struct Card* is_tpair = check_tpair(players[i], comm);
         if (is_tpair[0].player != -3) {
@@ -56,6 +106,7 @@ void determine_winner(struct Player* players, int player_count, struct Card* com
             players[i].winning[1] = is_tpair[1];
             players[i].winning[2] = is_tpair[2];
             players[i].winning[3] = is_tpair[3];
+            players[i].winning_type = 't';
         }
         struct Card* is_triple = check_triple(players[i], comm);
         if (is_triple[0].player != -3) {
@@ -63,6 +114,7 @@ void determine_winner(struct Player* players, int player_count, struct Card* com
             players[i].winning[1] = is_triple[1];
             players[i].winning[2] = is_triple[2];
             players[i].winning[3] = get_empty_card();
+            players[i].winning_type = 'r';
         }
         struct Card* is_straight = check_straight(players[i], comm);
         if (is_straight[0].player != -3) {
@@ -71,6 +123,7 @@ void determine_winner(struct Player* players, int player_count, struct Card* com
             players[i].winning[2] = is_straight[2];
             players[i].winning[3] = is_straight[3];
             players[i].winning[4] = is_straight[4];
+            players[i].winning_type = 's';
         }
         struct Card* is_flush = check_flush(players[i], comm);
         if (is_flush[0].player != -3) {
@@ -79,6 +132,7 @@ void determine_winner(struct Player* players, int player_count, struct Card* com
             players[i].winning[2] = is_flush[2];
             players[i].winning[3] = is_flush[3];
             players[i].winning[4] = is_flush[4];
+            players[i].winning_type = 'f';
         }
         struct Card* is_full = check_full(players[i], comm);
         if (is_full[0].player != -3) {
@@ -87,7 +141,17 @@ void determine_winner(struct Player* players, int player_count, struct Card* com
             players[i].winning[2] = is_full[2];
             players[i].winning[3] = is_full[3];
             players[i].winning[4] = is_full[4];
+            players[i].winning_type = 'u';
 
+        }
+        struct Card* is_straight_flush = check_straight_flush(players[i], comm);
+        if (is_straight_flush[0].player != -3) {
+            players[i].winning[0] = is_straight_flush[0];
+            players[i].winning[1] = is_straight_flush[1];
+            players[i].winning[2] = is_straight_flush[2];
+            players[i].winning[3] = is_straight_flush[3];
+            players[i].winning[4] = is_straight_flush[4];
+            players[i].winning_type = 'a';
         }
     }
 }
@@ -187,7 +251,9 @@ struct Card* check_triple(struct Player player, struct Card* comm) {
     }
     return highest_triple;
 }
-
+/*
+ * TODO: make sure its actually the highest straight and replace the returning array if there is a higher one
+ */
 struct Card* check_straight(struct Player player, struct Card* comm) {
     static struct Card highest_straight[5];
     static struct Card cc[7];
@@ -204,7 +270,10 @@ struct Card* check_straight(struct Player player, struct Card* comm) {
     for (int i = 0; i < 7; i++) {
         for (int j = 0; j < 7; j++) {
             if (i != j) {
-                if (cc[i].rank < cc[j].rank) {
+                if (cc[i].rank == cc[j].rank) {
+                    cc[i] = get_empty_card();
+                }
+                if (cc[i].rank <= cc[j].rank) {
                     struct Card temp = cc[i];
                     cc[i] = cc[j];
                     cc[j] = temp;
@@ -212,29 +281,17 @@ struct Card* check_straight(struct Player player, struct Card* comm) {
             }
         }
     }
-    int total = 0;
-    for (int i = 0; i < 2; i++) {
-        int start = cc[i].rank;
-        for (int j = i+1; j < 7; j++) {
-            if ((start+1) == cc[j].rank) {
-                start = cc[j].rank;
-                total = total + 1;
-                if (total == 4) {
-                    if (highest_straight[0].rank < cc[j].rank || highest_straight[0].player == -3) {
-                        highest_straight[0] = cc[j];
-                        highest_straight[1] = cc[j-1];
-                        highest_straight[2] = cc[j-2];
-                        highest_straight[3] = cc[j-3];
-                        highest_straight[4] = cc[j-4];
-                    } else {
-                        total = total - 1;
-                    }
+        for (int i = 1, j = 0; i < 7; i++) {
+            if (cc[i].rank != cc[i - 1].rank + 1) {
+                for (int k = 0; k < 5; k++) {
+                    highest_straight[k] = get_empty_card();
                 }
-            } else {
                 break;
             }
+            highest_straight[j] = cc[i];
+            j++;
         }
-    }
+
     return highest_straight;
 }
 
@@ -290,17 +347,9 @@ struct Card* check_flush(struct Player player, struct Card* comm) {
 
 struct Card* check_full(struct Player player, struct Card* comm) {
     static struct Card highest_full[5];
-    static struct Card cc[7];
     for (int i = 0; i < 5; i++) {
         highest_full[i] = get_empty_card();
     }
-    cc[0] = player.hole[0];
-    cc[1] = player.hole[1];
-    cc[2] = comm[0];
-    cc[3] = comm[1];
-    cc[4] = comm[2];
-    cc[5] = comm[3];
-    cc[6] = comm[4];
     struct Card* is_triple = check_triple(player, comm);
     struct Card* is_pair;
     if (is_triple[0].player != -3) {
@@ -313,7 +362,26 @@ struct Card* check_full(struct Player player, struct Card* comm) {
             highest_full[4] = is_pair[1];
         }
     }
-
     return highest_full;
+}
+
+struct Card* check_straight_flush(struct Player player, struct Card* comm) {
+    static struct Card highest_straight_flush[5];
+    for (int i = 0; i < 5; i++) {
+        highest_straight_flush[i] = get_empty_card();
+    }
+    struct Card* is_flush= check_flush(player, comm);
+    struct Card* is_straight;
+    if (is_flush[0].player != -3) {
+      is_straight = check_straight(player, comm);
+      if (is_straight[0].player != -3) {
+        highest_straight_flush[0] = is_flush[0];
+        highest_straight_flush[1] = is_flush[1];
+        highest_straight_flush[2] = is_flush[2];
+        highest_straight_flush[3] = is_flush[3];
+        highest_straight_flush[4] = is_flush[4];
+      }
+    }
+    return highest_straight_flush;
 }
 

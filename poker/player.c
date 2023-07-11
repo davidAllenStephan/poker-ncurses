@@ -21,7 +21,7 @@ struct Player* create_players(int num, struct Card* deck) {
         players[i].winning[2] = empty_card;
         players[i].winning[3] = empty_card;
         players[i].winning[4] = empty_card;
-
+        players[i].winning_type = 'x';
     }
     return players;
 }

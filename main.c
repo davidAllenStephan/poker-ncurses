@@ -34,22 +34,27 @@ int main(int argc, char *argv[]) {
   refresh();
   getch();
   endwin();*/
-    int cont= 0;
+    /*int cont= 0;
     int count = 0;
     while (cont == 0) {
-        count += 1;
+        count++;
         printf("%d\n", count);
         struct Game output = run_game();
         for (int i = 0; i < 4; i++) {
-            if (output.players[i].winning[4].player != -3) {
+            if (output.players[i].winning_type == 'a') {
                 cont = -1;
                 print_community(output.community);
                 print_hands(output.players, 4);
                 print_players(output.players, 4);
-
+                break;
             }
         }
-    }
+    }*/
+
+    struct Game game = run_game();
+    print_community(game.community);
+    print_hands(game.players,  4);
+    print_players(game.players,  4);
 
 
     return 0;
