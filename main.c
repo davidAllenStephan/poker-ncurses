@@ -11,8 +11,13 @@
 #include "poker/player.h"
 #include "poker/card.h"
 
+struct Game {
+    struct Player* players;
+    struct Card* community;
+};
+
 void create_image();
-struct Player* run_game();
+struct Game run_game();
 void print_hands(struct Player* players, int player_count);
 void print_community(struct Card* community);
 void print_players(struct Player* players, int player_count);
@@ -34,11 +39,14 @@ int main(int argc, char *argv[]) {
     while (cont == 0) {
         count += 1;
         printf("%d\n", count);
-        struct Player* output = run_game();
+        struct Game output = run_game();
         for (int i = 0; i < 4; i++) {
-            if (output[i].winning[4].player != -3) {
+            if (output.players[i].winning[4].player != -3) {
                 cont = -1;
-                print_players(output, 4);
+                print_community(output.community);
+                print_hands(output.players, 4);
+                print_players(output.players, 4);
+
             }
         }
     }
@@ -47,7 +55,7 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-struct Player* run_game() {
+struct Game run_game() {
     struct Card* deck_ptr;
     struct Player* player_ptr;
     struct Card* comm_ptr;
@@ -56,7 +64,10 @@ struct Player* run_game() {
     player_ptr = create_players(num_players, deck_ptr);
     comm_ptr = create_community(deck_ptr);
     determine_winner(player_ptr, num_players, comm_ptr);
-    return player_ptr;
+    struct Game game;
+    game.players = player_ptr;
+    game.community = comm_ptr;
+    return game;
 }
 
 void print_players(struct Player* players, int player_count) {

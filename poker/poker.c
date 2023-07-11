@@ -80,6 +80,15 @@ void determine_winner(struct Player* players, int player_count, struct Card* com
             players[i].winning[3] = is_flush[3];
             players[i].winning[4] = is_flush[4];
         }
+        struct Card* is_full = check_full(players[i], comm);
+        if (is_full[0].player != -3) {
+            players[i].winning[0] = is_full[0];
+            players[i].winning[1] = is_full[1];
+            players[i].winning[2] = is_full[2];
+            players[i].winning[3] = is_full[3];
+            players[i].winning[4] = is_full[4];
+
+        }
     }
 }
 
@@ -242,12 +251,10 @@ struct Card* check_flush(struct Player player, struct Card* comm) {
     cc[4] = comm[2];
     cc[5] = comm[3];
     cc[6] = comm[4];
-
     int heart_count = 0;
     int spade_count = 0;
     int jack_count = 0;
     int diamond_count = 0;
-
     for (int i = 0; i < 7; i++) {
         switch(cc[i].suit) {
             case 'h': heart_count++;
@@ -260,9 +267,7 @@ struct Card* check_flush(struct Player player, struct Card* comm) {
                       break;
         }
     }
-
     char flush_suit;
-
     if (heart_count >= 5) {
         flush_suit = 'h';
     } else if (spade_count >= 5) {
@@ -274,15 +279,41 @@ struct Card* check_flush(struct Player player, struct Card* comm) {
     } else {
         return highest_flush;
     }
-
     for (int i = 0, j = 0; i < 7; i++) {
         if (cc[i].suit == flush_suit) {
            highest_flush[j] = cc[i];
            j++;
         }
     }
-
     return highest_flush;
+}
 
+struct Card* check_full(struct Player player, struct Card* comm) {
+    static struct Card highest_full[5];
+    static struct Card cc[7];
+    for (int i = 0; i < 5; i++) {
+        highest_full[i] = get_empty_card();
+    }
+    cc[0] = player.hole[0];
+    cc[1] = player.hole[1];
+    cc[2] = comm[0];
+    cc[3] = comm[1];
+    cc[4] = comm[2];
+    cc[5] = comm[3];
+    cc[6] = comm[4];
+    struct Card* is_triple = check_triple(player, comm);
+    struct Card* is_pair;
+    if (is_triple[0].player != -3) {
+        is_pair = check_pair(player, comm, is_triple[0].rank);
+        if (is_pair[0].player != -3) {
+            highest_full[0] = is_triple[0];
+            highest_full[1] = is_triple[1];
+            highest_full[2] = is_triple[2];
+            highest_full[3] = is_pair[0];
+            highest_full[4] = is_pair[1];
+        }
+    }
+
+    return highest_full;
 }
 
