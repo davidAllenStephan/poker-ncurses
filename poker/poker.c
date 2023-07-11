@@ -72,6 +72,14 @@ void determine_winner(struct Player* players, int player_count, struct Card* com
             players[i].winning[3] = is_straight[3];
             players[i].winning[4] = is_straight[4];
         }
+        struct Card* is_flush = check_flush(players[i], comm);
+        if (is_flush[0].player != -3) {
+            players[i].winning[0] = is_flush[0];
+            players[i].winning[1] = is_flush[1];
+            players[i].winning[2] = is_flush[2];
+            players[i].winning[3] = is_flush[3];
+            players[i].winning[4] = is_flush[4];
+        }
     }
 }
 
@@ -220,3 +228,61 @@ struct Card* check_straight(struct Player player, struct Card* comm) {
     }
     return highest_straight;
 }
+
+struct Card* check_flush(struct Player player, struct Card* comm) {
+    static struct Card highest_flush[5];
+    static struct Card cc[7];
+    for (int i = 0; i < 5; i++) {
+        highest_flush[i] = get_empty_card();
+    }
+    cc[0] = player.hole[0];
+    cc[1] = player.hole[1];
+    cc[2] = comm[0];
+    cc[3] = comm[1];
+    cc[4] = comm[2];
+    cc[5] = comm[3];
+    cc[6] = comm[4];
+
+    int heart_count = 0;
+    int spade_count = 0;
+    int jack_count = 0;
+    int diamond_count = 0;
+
+    for (int i = 0; i < 7; i++) {
+        switch(cc[i].suit) {
+            case 'h': heart_count++;
+                      break;
+            case 's': spade_count++;
+                      break;
+            case 'j': jack_count++;
+                      break;
+            case 'd': diamond_count++;
+                      break;
+        }
+    }
+
+    char flush_suit;
+
+    if (heart_count >= 5) {
+        flush_suit = 'h';
+    } else if (spade_count >= 5) {
+        flush_suit = 's';
+    } else if (jack_count >= 5) {
+        flush_suit = 'j';
+    } else if (diamond_count >= 5) {
+        flush_suit = 'd';
+    } else {
+        return highest_flush;
+    }
+
+    for (int i = 0, j = 0; i < 7; i++) {
+        if (cc[i].suit == flush_suit) {
+           highest_flush[j] = cc[i];
+           j++;
+        }
+    }
+
+    return highest_flush;
+
+}
+
